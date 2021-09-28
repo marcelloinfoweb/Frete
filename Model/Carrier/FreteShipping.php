@@ -55,6 +55,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      * @param \Magento\Shipping\Model\Rate\ResultFactory $rateResultFactory
      * @param \Magento\Quote\Model\Quote\Address\RateResult\MethodFactory $rateMethodFactory
      * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Funarbe\Helper\Helper\Data $helper
      * @param array $data
      */
     public function __construct(
@@ -92,22 +93,20 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         /** @var \Magento\Shipping\Model\Rate\Result $result */
         $result = $this->rateResultFactory->create();
 
-        /** @var \Magento\Quote\Model\Quote\Address\RateResult\Method $method */
-        $method = $this->rateMethodFactory->create();
-
-        $method->setCarrier($this->_code);
-        $method->setCarrierTitle($this->getConfigData('title'));
-
-        $method->setMethod($this->_code);
-        $method->setMethodTitle($this->getConfigData('name'));
-
         $cep = $this->_checkoutSession->getQuote()->getShippingAddress()->getPostcode();
         $cepNumeros = preg_replace('/[\D]/', '', $cep);
         $cpfCliente = $this->_checkoutSession->getQuote()->getCustomer()->getTaxvat();
         $funcionario = $this->helper->getIntegratorRmClienteFornecedor($cpfCliente);
 
+        /** @var \Magento\Quote\Model\Quote\Address\RateResult\Method $method */
+        $method = $this->rateMethodFactory->create();
+        $method->setCarrier($this->_code);
+        $method->setCarrierTitle($this->getConfigData('title'));
+        $method->setMethod($this->_code);
+
         // Verificar se é funcionario Funarbe
         if (!$funcionario) { // false
+            $method->setMethodTitle($this->getConfigData('name'));
             $taxaEntrega = '';
             $valorTotal = (float)$request->getBaseSubtotalInclTax();
             $cep = $this->helper->curlGet(
@@ -117,13 +116,15 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                 $taxaEntrega = 30.0;
             } elseif ($valorTotal > 0.01 && $valorTotal < 100.0) {
                 $taxaEntrega = $cep['taxa'];
-            } elseif ($valorTotal > 100.01 && $valorTotal < 150.0) {
+            } elseif ($valorTotal > 100.01 && $valorTotal < 149.99) {
                 $taxaEntrega = 10.0;
             }
             $shippingCost = (float)$taxaEntrega;
         } else { // true
+            $method->setMethodTitle($this->getConfigData('text_shipping_free'));
             $shippingCost = (float)0.0;
         }
+
         $method->setPrice($shippingCost);
         $method->setCost($shippingCost);
         $result->append($method);
