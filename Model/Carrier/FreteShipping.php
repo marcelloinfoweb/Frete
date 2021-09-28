@@ -118,11 +118,14 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                 $taxaEntrega = $cep['taxa'];
             } elseif ($valorTotal > 100.01 && $valorTotal < 149.99) {
                 $taxaEntrega = 10.0;
+            } else {
+                $method->setMethodTitle($this->getConfigData('text_shipping_free'));
+                $taxaEntrega = 0.0;
             }
             $shippingCost = (float)$taxaEntrega;
         } else { // true
             $method->setMethodTitle($this->getConfigData('text_shipping_free'));
-            $shippingCost = (float)0.0;
+            $shippingCost = 0.0;
         }
 
         $method->setPrice($shippingCost);
