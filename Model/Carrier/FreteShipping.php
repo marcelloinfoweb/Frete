@@ -110,7 +110,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
             $taxaEntrega = '';
             $valorTotal = (float)$request->getBaseSubtotalInclTax();
             $cep = $this->helper->curlGet(
-                "http://dev.marcelo.controle-super/ecommerce/onde-entregamos/frete?cep=$cepNumeros"
+                "https://controle.supermercadoescola.org.br/ecommerce/onde-entregamos/frete?cep=$cepNumeros"
             );
             if ($cep['taxa'] === 30) {
                 $taxaEntrega = 30.0;
