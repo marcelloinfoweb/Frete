@@ -112,15 +112,25 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
             $cep = $this->helper->curlGet(
                 "https://controle.supermercadoescola.org.br/ecommerce/onde-entregamos/frete?cep=$cepNumeros"
             );
+
             if ($cep['taxa'] === 30) {
-                $taxaEntrega = 30.0;
-            } elseif ($valorTotal > 0.01 && $valorTotal < 100.0) {
-                $taxaEntrega = $cep['taxa'];
-            } elseif ($valorTotal > 100.01 && $valorTotal < 149.99) {
-                $taxaEntrega = 10.0;
-            } else {
-                $method->setMethodTitle($this->getConfigData('text_shipping_free'));
-                $taxaEntrega = 0.0;
+                if ($valorTotal > 0.01 && $valorTotal < 170.0) {
+                    $taxaEntrega = $cep['taxa'];
+                } elseif ($valorTotal > 170.01 && $valorTotal < 250.00) {
+                    $taxaEntrega = 20.0;
+                } elseif ($valorTotal > 250.01) {
+                    $taxaEntrega = 10.0;
+                }
+            }
+            if ($cep['taxa'] === 15) {
+                if ($valorTotal > 0.01 && $valorTotal < 100.0) {
+                    $taxaEntrega = $cep['taxa'];
+                } elseif ($valorTotal > 100.01 && $valorTotal < 150.00) {
+                    $taxaEntrega = 10.0;
+                } elseif ($valorTotal > 150.01) {
+                    $method->setMethodTitle($this->getConfigData('text_shipping_free'));
+                    $taxaEntrega = 0.0;
+                }
             }
             $shippingCost = (float)$taxaEntrega;
         } else { // true

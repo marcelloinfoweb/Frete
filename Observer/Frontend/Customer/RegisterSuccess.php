@@ -31,7 +31,6 @@ class RegisterSuccess implements ObserverInterface
      * Execute observer
      *
      * @param \Magento\Framework\Event\Observer $observer
-     * @throws \Safe\Exceptions\JsonException
      */
     public function execute(Observer $observer): void
     {
