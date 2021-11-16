@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright ©  All rights reserved.
  * See COPYING.txt for license details.
@@ -7,22 +8,29 @@ declare(strict_types=1);
 
 namespace Funarbe\Frete\Observer\Frontend\Customer;
 
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
-use Magento\Framework\App\ResourceConnection;
 use Funarbe\Helper\Helper\Data;
+use Magento\Framework\Exception\LocalizedException;
+use Psr\Log\LoggerInterface;
 
-class RegisterSuccess implements ObserverInterface
+
+class LoginSuccess implements ObserverInterface
 {
     /**
      * @var \Funarbe\Helper\Helper\Data
      */
     protected Data $helper;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private LoggerInterface $logger;
 
     public function __construct(
+        LoggerInterface $logger,
         Data $helper
     ) {
+        $this->logger = $logger;
         $this->helper = $helper;
     }
 
@@ -38,20 +46,18 @@ class RegisterSuccess implements ObserverInterface
         $response = $this->helper->getIntegratorRmClienteFornecedor($cpf);
 
         if ($response) {
-            $idCustomer = $customer->getId();
-
-            $objectManager = ObjectManager::getInstance();
-
-            $resource = $objectManager->get(ResourceConnection::class);
-
-            $connection = $resource->getConnection();
-            $customer_entity = $resource->getTableName('customer_entity');
-            $customer_grid_flat = $resource->getTableName('customer_grid_flat');
-
-            $sql = "UPDATE $customer_entity ce JOIN $customer_grid_flat cgf ON ce.entity_id = cgf.entity_id";
-            $sql .= " SET ce.group_id = 4, cgf.group_id = 4 WHERE ce.entity_id={$idCustomer} ";
-
-            $connection->query($sql);
+            try {
+                $customer->setGroupId(4)->save();
+            } catch (LocalizedException $exception) {
+                $this->logger->error($exception);
+            }
+        } else {
+            try {
+                $customer->setGroupId(1)->save();
+            } catch (LocalizedException $exception) {
+                $this->logger->error($exception);
+            }
         }
     }
 }
+
