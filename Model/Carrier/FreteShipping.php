@@ -90,7 +90,6 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
             return false;
         }
 
-        /** @var \Magento\Shipping\Model\Rate\Result $result */
         $result = $this->rateResultFactory->create();
 
         $cep = $this->_checkoutSession->getQuote()->getShippingAddress()->getPostcode();
@@ -99,13 +98,12 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
             $cpfCliente = $this->_checkoutSession->getQuote()->getCustomer()->getTaxvat();
             $funcionario = $this->helper->getIntegratorRmClienteFornecedor($cpfCliente);
 
-            /** @var \Magento\Quote\Model\Quote\Address\RateResult\Method $method */
             $method = $this->rateMethodFactory->create();
             $method->setCarrier($this->_code);
             $method->setCarrierTitle($this->getConfigData('title'));
             $method->setMethod($this->_code);
 
-            // Verificar se é funcionario Funarbe
+            // Verificar se é funcionário Funarbe
             if (!$funcionario) { // false
                 $method->setMethodTitle($this->getConfigData('name'));
                 $taxaEntrega = '';
@@ -114,30 +112,33 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                     "https://controle.supermercadoescola.org.br/ecommerce/onde-entregamos/frete?cep=$cepNumeros"
                 );
 
-                if ($cep['taxa'] === 30) {
-                    if ($valorTotal > 0.01 && $valorTotal < 170.0) {
-                        $taxaEntrega = $cep['taxa'];
-                    } elseif ($valorTotal > 170.01 && $valorTotal < 250.00) {
-                        $taxaEntrega = 20.0;
-                    } elseif ($valorTotal > 250.01) {
-                        $taxaEntrega = 10.0;
+                if (isset($cep)) {
+                    if ($cep['taxa'] === 30) {
+                        if ($valorTotal > 0.01 && $valorTotal < 170.0) {
+                            $taxaEntrega = $cep['taxa'];
+                        } elseif ($valorTotal > 170.01 && $valorTotal < 250.00) {
+                            $taxaEntrega = 20.0;
+                        } elseif ($valorTotal > 250.01) {
+                            $taxaEntrega = 10.0;
+                        }
                     }
-                }
-                if ($cep['taxa'] === 15) {
-                    if ($valorTotal > 0.01 && $valorTotal < 100.0) {
-                        $taxaEntrega = $cep['taxa'];
-                    } elseif ($valorTotal > 100.01 && $valorTotal < 150.00) {
-                        $taxaEntrega = 10.0;
-                    } elseif ($valorTotal > 150.01) {
-                        $method->setMethodTitle($this->getConfigData('text_shipping_free'));
-                        $taxaEntrega = 0.0;
+                    if ($cep['taxa'] === 15) {
+                        if ($valorTotal > 0.01 && $valorTotal < 100.0) {
+                            $taxaEntrega = $cep['taxa'];
+                        } elseif ($valorTotal > 100.01 && $valorTotal < 150.00) {
+                            $taxaEntrega = 10.0;
+                        } elseif ($valorTotal > 150.01) {
+                            $method->setMethodTitle($this->getConfigData('text_shipping_free'));
+                            $taxaEntrega = 0.0;
+                        }
                     }
+                    $shippingCost = (float)$taxaEntrega;
+                } else { // true
+                    $method->setMethodTitle($this->getConfigData('text_shipping_free'));
+                    $shippingCost = 0.0;
                 }
-                $shippingCost = (float)$taxaEntrega;
-            } else { // true
-                $method->setMethodTitle($this->getConfigData('text_shipping_free'));
-                $shippingCost = 0.0;
             }
+            $shippingCost = 0.0;
 
             $method->setPrice($shippingCost);
             $method->setCost($shippingCost);
