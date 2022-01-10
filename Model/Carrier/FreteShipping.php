@@ -31,7 +31,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
     /**
      * @var \Magento\Checkout\Model\Session
      */
-    protected Session $_checkoutSession;
+    protected Session $checkoutSession;
 
     /**
      * @var \Magento\Shipping\Model\Rate\ResultFactory
@@ -75,7 +75,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         $this->cart = $cart;
         $this->rateResultFactory = $rateResultFactory;
         $this->rateMethodFactory = $rateMethodFactory;
-        $this->_checkoutSession = $checkoutSession;
+        $this->checkoutSession = $checkoutSession;
         $this->helper = $helper;
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -96,12 +96,13 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         }
 
         $result = $this->rateResultFactory->create();
-        $couponCode = 'descontoColaboradores';
+        $couponFunc = 'descontoColaboradores';
+        $couponZera = 'zeraodesconto';
 
-        $cep = $this->_checkoutSession->getQuote()->getShippingAddress()->getPostcode();
+        $cep = $this->checkoutSession->getQuote()->getShippingAddress()->getPostcode();
         if ($cep) {
             $cepNumeros = preg_replace('/[\D]/', '', $cep);
-            $cpfCliente = $this->_checkoutSession->getQuote()->getCustomer()->getTaxvat();
+            $cpfCliente = $this->checkoutSession->getQuote()->getCustomer()->getTaxvat();
             $funcionario = $this->helper->getIntegratorRmClienteFornecedor($cpfCliente);
 
             $method = $this->rateMethodFactory->create();
@@ -111,6 +112,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
 
             // Verificar se é funcionário Funarbe
             if (!$funcionario) { // false
+                $this->checkoutSession->getQuote()->setCouponCode($couponZera)->collectTotals()->save();
                 $method->setMethodTitle($this->getConfigData('name'));
                 $taxaEntrega = '';
                 $valorTotal = (float)$request->getBaseSubtotalInclTax();
@@ -142,10 +144,11 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                 } else { // true
                     $method->setMethodTitle($this->getConfigData('text_shipping_free'));
                     $shippingCost = 0.0;
-                    $this->cart->getQuote()->setCouponCode($couponCode);
-                    $this->cart->save();
                 }
             }
+
+            $this->checkoutSession->getQuote()->setCouponCode($couponFunc)->collectTotals()->save();
+
             $shippingCost = 0.0;
 
             $method->setPrice($shippingCost);
