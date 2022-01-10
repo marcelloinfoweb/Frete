@@ -48,6 +48,8 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      */
     private Data $helper;
 
+    private \Magento\Checkout\Model\Cart $cart;
+
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory
@@ -56,6 +58,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      * @param \Magento\Quote\Model\Quote\Address\RateResult\MethodFactory $rateMethodFactory
      * @param \Magento\Checkout\Model\Session $checkoutSession
      * @param \Funarbe\Helper\Helper\Data $helper
+     * @param \Magento\Checkout\Model\Cart $cart
      * @param array $data
      */
     public function __construct(
@@ -66,13 +69,15 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         MethodFactory $rateMethodFactory,
         Session $checkoutSession,
         Data $helper,
+        \Magento\Checkout\Model\Cart $cart,
         array $data = []
     ) {
-        parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
+        $this->cart = $cart;
         $this->rateResultFactory = $rateResultFactory;
         $this->rateMethodFactory = $rateMethodFactory;
         $this->_checkoutSession = $checkoutSession;
         $this->helper = $helper;
+        parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
 
     /**
@@ -91,6 +96,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         }
 
         $result = $this->rateResultFactory->create();
+        $couponCode = 'descontoColaboradores';
 
         $cep = $this->_checkoutSession->getQuote()->getShippingAddress()->getPostcode();
         if ($cep) {
@@ -136,6 +142,8 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                 } else { // true
                     $method->setMethodTitle($this->getConfigData('text_shipping_free'));
                     $shippingCost = 0.0;
+                    $this->cart->getQuote()->setCouponCode($couponCode);
+                    $this->cart->save();
                 }
             }
             $shippingCost = 0.0;

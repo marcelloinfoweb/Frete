@@ -47,7 +47,7 @@ class LoginSuccess implements ObserverInterface
 
         if ($response) {
             try {
-                $customer->setGroupId(4)->save();
+                $customer->setGroupId(1)->save();
             } catch (LocalizedException $exception) {
                 $this->logger->error($exception);
             }
