@@ -45,10 +45,8 @@ class RegisterSuccess implements ObserverInterface
 
             $connection = $resource->getConnection();
             $customer_entity = $resource->getTableName('customer_entity');
-            $customer_grid_flat = $resource->getTableName('customer_grid_flat');
 
-            $sql = "UPDATE $customer_entity ce JOIN $customer_grid_flat cgf ON ce.entity_id = cgf.entity_id";
-            $sql .= " SET ce.colaborador = 1, cgf.colaborador = 1 WHERE ce.entity_id=$idCustomer";
+            $sql = "UPDATE $customer_entity ce SET ce.colaborador = 1 WHERE ce.entity_id=$idCustomer";
 
             $connection->query($sql);
         }
