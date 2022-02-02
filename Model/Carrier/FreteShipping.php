@@ -101,7 +101,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
 
         $cep = $this->checkoutSession->getQuote()->getShippingAddress()->getPostcode();
         if ($cep) {
-            $cepNumeros = preg_replace('/[\D]/', '', $cep);
+            $cepNumeros = preg_replace('/\D/', '', $cep);
             $cpfCliente = $this->checkoutSession->getQuote()->getCustomer()->getTaxvat();
             $funcionario = $this->helper->getIntegratorRmClienteFornecedor($cpfCliente);
 
@@ -111,8 +111,8 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
             $method->setMethod($this->_code);
 
             // Verificar se é funcionário Funarbe
-            if (!$funcionario) { // false
-                $this->checkoutSession->getQuote()->setCouponCode($couponZera)->collectTotals()->save();
+            if (!$funcionario) {// false
+//                $this->checkoutSession->getQuote()->setCouponCode($couponZera)->collectTotals()->save();
                 $method->setMethodTitle($this->getConfigData('name'));
                 $taxaEntrega = '';
                 $valorTotal = (float)$request->getBaseSubtotalInclTax();
@@ -124,32 +124,36 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                     if ($cep['taxa'] === 30) {
                         if ($valorTotal > 0.01 && $valorTotal < 170.0) {
                             $taxaEntrega = $cep['taxa'];
-                        } elseif ($valorTotal > 170.01 && $valorTotal < 250.00) {
+                        }
+                        if ($valorTotal > 170.01 && $valorTotal < 250.00) {
                             $taxaEntrega = 20.0;
-                        } elseif ($valorTotal > 250.01) {
+                        }
+                        if ($valorTotal > 250.01) {
                             $taxaEntrega = 10.0;
                         }
                     }
                     if ($cep['taxa'] === 15) {
                         if ($valorTotal > 0.01 && $valorTotal < 100.0) {
                             $taxaEntrega = $cep['taxa'];
-                        } elseif ($valorTotal > 100.01 && $valorTotal < 150.00) {
+                        }
+                        if ($valorTotal > 100.01 && $valorTotal < 150.00) {
                             $taxaEntrega = 10.0;
-                        } elseif ($valorTotal > 150.01) {
+                        }
+                        if ($valorTotal > 150.01) {
                             $method->setMethodTitle($this->getConfigData('text_shipping_free'));
                             $taxaEntrega = 0.0;
                         }
                     }
+//                    var_dump($taxaEntrega);
+
                     $shippingCost = (float)$taxaEntrega;
-                } else { // true
-                    $method->setMethodTitle($this->getConfigData('text_shipping_free'));
-                    $shippingCost = 0.0;
                 }
+            } else {// true
+                $method->setMethodTitle($this->getConfigData('text_shipping_free'));
+                $shippingCost = 0.0;
             }
 
-            $this->checkoutSession->getQuote()->setCouponCode($couponFunc)->collectTotals()->save();
-
-            $shippingCost = 0.0;
+//            $this->checkoutSession->getQuote()->setCouponCode($couponFunc)->collectTotals()->save();
 
             $method->setPrice($shippingCost);
             $method->setCost($shippingCost);
