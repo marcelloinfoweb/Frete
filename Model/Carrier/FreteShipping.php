@@ -89,15 +89,13 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Safe\Exceptions\JsonException
      */
-    public function collectRates(RateRequest $request)
+    public function collectRates(RateRequest $request): \Magento\Shipping\Model\Rate\Result
     {
         if (!$this->getConfigFlag('active')) {
             return false;
         }
 
         $result = $this->rateResultFactory->create();
-        $couponFunc = 'descontoColaboradores';
-        $couponZera = 'zeraodesconto';
 
         $cep = $this->checkoutSession->getQuote()->getShippingAddress()->getPostcode();
         if ($cep) {
@@ -112,7 +110,6 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
 
             // Verificar se é funcionário Funarbe
             if (!$funcionario) {// false
-//                $this->checkoutSession->getQuote()->setCouponCode($couponZera)->collectTotals()->save();
                 $method->setMethodTitle($this->getConfigData('name'));
                 $taxaEntrega = '';
                 $valorTotal = (float)$request->getBaseSubtotalInclTax();
@@ -144,16 +141,12 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
                             $taxaEntrega = 0.0;
                         }
                     }
-//                    var_dump($taxaEntrega);
-
                     $shippingCost = (float)$taxaEntrega;
                 }
             } else {// true
                 $method->setMethodTitle($this->getConfigData('text_shipping_free'));
                 $shippingCost = 0.0;
             }
-
-//            $this->checkoutSession->getQuote()->setCouponCode($couponFunc)->collectTotals()->save();
 
             $method->setPrice($shippingCost);
             $method->setCost($shippingCost);
