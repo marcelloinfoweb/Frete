@@ -154,6 +154,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
 
             return $result;
         }
+        return true;
     }
 
     /**
