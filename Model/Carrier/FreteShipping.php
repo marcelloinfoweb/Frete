@@ -84,12 +84,11 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      * Custom Shipping Rates Collector
      *
      * @param RateRequest $request
-     * @return \Magento\Shipping\Model\Rate\Result
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Safe\Exceptions\JsonException
      */
-    public function collectRates(RateRequest $request): \Magento\Shipping\Model\Rate\Result
+    public function collectRates(RateRequest $request)
     {
         if (!$this->getConfigFlag('active')) {
             return false;
