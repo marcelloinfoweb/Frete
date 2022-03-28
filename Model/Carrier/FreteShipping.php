@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Custom shipping model
+ * @property $rateErrorFactory
  */
 class FreteShipping extends AbstractCarrier implements CarrierInterface
 {
@@ -48,6 +49,9 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      */
     private Data $helper;
 
+    /**
+     * @var \Magento\Checkout\Model\Cart
+     */
     private \Magento\Checkout\Model\Cart $cart;
 
     /**
@@ -75,6 +79,7 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
         $this->cart = $cart;
         $this->rateResultFactory = $rateResultFactory;
         $this->rateMethodFactory = $rateMethodFactory;
+        $this->rateErrorFactory = $rateErrorFactory;
         $this->checkoutSession = $checkoutSession;
         $this->helper = $helper;
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
@@ -84,9 +89,9 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
      * Custom Shipping Rates Collector
      *
      * @param RateRequest $request
+     * @return bool|\Magento\Shipping\Model\Rate\Result
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
-     * @throws \Safe\Exceptions\JsonException
      */
     public function collectRates(RateRequest $request)
     {
@@ -153,7 +158,12 @@ class FreteShipping extends AbstractCarrier implements CarrierInterface
 
             return $result;
         }
-        return true;
+        $error = $this->rateErrorFactory->create();
+        $error->setCarrier($this->_code);
+        $error->setCarrierTitle($this->getConfigData('text_shipping_free'));
+        $errorMsg = $this->getConfigData('specificerrmsg');
+        $error->setErrorMessage($errorMsg);
+        return $error;
     }
 
     /**

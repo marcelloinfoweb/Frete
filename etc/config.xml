@@ -10,6 +10,12 @@
                 <text_shipping_free>Entrega Grátis Funarbe</text_shipping_free>
                 <sort_order>0</sort_order>
                 <model>Funarbe\Frete\Model\Carrier\FreteShipping</model>
+                <type>I</type>
+                <specificerrmsg>Para finalizar a sua compra, acesse o seu perfil e cadastre o CEP.
+                    Acesse: No canto superior direito clique em "Sua Conta" > na janela à direita em "Minha Conta" > na
+                    próxima tela no segundo quadrado, clique em "Editar o Endereço" > e insira um CEP válido.
+                </specificerrmsg>
+                <handling_type>F</handling_type>
             </fretefunarbe>
         </carriers>
     </default>
